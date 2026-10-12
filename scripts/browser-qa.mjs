@@ -88,7 +88,8 @@ try {
   const faq = page.locator('.faq details').first();
   await faq.locator('summary').click();
   assert.equal(await faq.getAttribute('open'), '');
-  await page.goto(url + 'missing-page/');
+  const missingPage = await page.goto(url + 'missing-page/');
+  assert.equal(missingPage.status(), 404);
   assert.equal(await page.locator('h1').textContent(), 'Страницата не е пронајдена.');
   results.functional.push('FAQ disclosure and 404 response');
   await page.setViewportSize({ width: 720, height: 500 });

@@ -6,7 +6,7 @@
 - Original design images and icons are present locally; responsive WebP derivatives build successfully.
 - `npm run check`: no Astro or TypeScript errors or warnings.
 - `npm run build`: 21 static HTML pages, sitemap, robots and LLM content generated successfully.
-- Six assertions cover attachment size/type boundaries, all 20 localized routes plus 404, unique metadata, structured data, local links, responsive sources, CSS assets, original files and sitemap URLs. All pass.
+- Seven tests cover attachment size/type boundaries, all 20 localized routes plus 404, unique metadata, structured data, local links, responsive sources, CSS assets, original files, sitemap URLs and local test-server error responses. All pass.
 - Script syntax checks pass.
 - Browser startup and localhost listening are blocked inside the workspace sandbox (`Operation not permitted`). Browser and Lighthouse suites are prepared for execution from a normal terminal and GitHub Actions; no successful full-suite result is claimed yet.
 - The first user-run browser check flagged 320px text geometry. The measurement was refined to exclude decorative pseudo-elements and to collect screenshots and results across the entire viewport matrix. The refined suite is awaiting a complete run.

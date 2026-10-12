@@ -1,0 +1,17 @@
+---
+import Photo from '../ui/Photo.astro';
+import { copy, certificates } from '../../data/site';
+import type { Language } from '../../lib/routes';
+interface Props { lang: Language }
+const { lang } = Astro.props;
+const c = copy[lang];
+---
+<section class="about-intro container" aria-labelledby="about-title">
+  <h1 id="about-title">{c.aboutTitle}</h1>
+  <p class="about-description">{c.aboutBody}</p>
+  <div class="about-images"><Photo name="workshop" alt={lang === 'mk' ? 'Машинска обработка во производствена работилница' : 'Metal fabrication in a production workshop'} eager sizes="(max-width: 699px) 100vw, 44vw" /><Photo name="team" alt={lang === 'mk' ? 'Технички тим разгледува цртежи покрај индустриски цевководи' : 'Technical team reviewing drawings beside industrial pipelines'} eager sizes="(max-width: 699px) 100vw, 44vw" /></div>
+</section>
+<section class="certificates container" aria-labelledby="certificates-title">
+  <div class="certificates-heading"><p class="certificate-eyebrow">{c.certificates}</p><h2 id="certificates-title">{c.certificatesTitle}</h2><p>{c.certificatesBody}</p></div>
+  <div class="certificate-grid">{certificates.map(cert => <article class="certificate-card"><Photo name={cert.image} alt={`INTERCERT Certified ${cert.title}`} widths={[400, 748]} sizes="(max-width: 699px) 100vw, 30vw" /><div><h3>{cert.title}</h3><p>{cert[lang]}</p></div></article>)}</div>
+</section>

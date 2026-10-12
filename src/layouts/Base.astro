@@ -1,0 +1,38 @@
+---
+import Header from '../components/layout/Header.astro';
+import Footer from '../components/layout/Footer.astro';
+import { copy, metadata, services } from '../data/site';
+import { absolute, asset, route, type Language, type Page } from '../lib/routes';
+import '../styles/global.css';
+interface Props { page: Page | '404'; lang: Language }
+const { page, lang } = Astro.props;
+const { title, description } = metadata(page, lang);
+const canonical = absolute(route(page, lang));
+const orgId = `${absolute(route('home'))}#organization`;
+const org = { '@type': 'Organization', '@id': orgId, name: 'Heral Metal', alternateName: 'Херал Метал', url: absolute(route('home')), description: copy[lang].tagline };
+const service = services.find(s => page === `services/${s.id}`);
+const structured = { '@context': 'https://schema.org', '@graph': [org, { '@type': 'WebSite', name: 'Heral Metal', url: absolute(route('home')), inLanguage: ['mk', 'en'], publisher: { '@id': orgId } }, ...(service ? [{ '@type': 'Service', name: service[lang].title, description: service[lang].description, provider: { '@id': orgId }, url: canonical }] : []), ...(page !== 'home' && page !== '404' ? [{ '@type': 'BreadcrumbList', itemListElement: [{ '@type': 'ListItem', position: 1, name: copy[lang].home, item: absolute(route('home', lang)) }, { '@type': 'ListItem', position: 2, name: title.split(' | ')[0], item: canonical }] }] : [])] };
+---
+<!doctype html>
+<html lang={lang}>
+  <head>
+    <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title><meta name="description" content={description} />
+    <meta name="theme-color" content="#f4f3ee" /><meta name="robots" content={page === '404' ? 'noindex, follow' : 'index, follow'} />
+    <link rel="canonical" href={canonical} />
+    {page !== '404' && <><link rel="alternate" hreflang="mk" href={absolute(route(page, 'mk'))} /><link rel="alternate" hreflang="en" href={absolute(route(page, 'en'))} /><link rel="alternate" hreflang="x-default" href={absolute(route(page, 'mk'))} /></>}
+    <link rel="icon" href={asset('favicon.svg')} type="image/svg+xml" />
+    <link rel="preload" href={asset('fonts/arimo.woff2')} as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href={asset('fonts/roboto-condensed.woff2')} as="font" type="font/woff2" crossorigin />
+    <meta property="og:type" content="website" /><meta property="og:site_name" content="Heral Metal" /><meta property="og:locale" content={lang === 'mk' ? 'mk_MK' : 'en_GB'} />
+    <meta property="og:title" content={title} /><meta property="og:description" content={description} /><meta property="og:url" content={canonical} /><meta property="og:image" content={absolute(asset('social-card.jpg'))} /><meta property="og:image:alt" content="Heral Metal — industrial solutions" /><meta property="og:image:width" content="1200" /><meta property="og:image:height" content="630" />
+    <meta name="twitter:card" content="summary_large_image" /><meta name="twitter:title" content={title} /><meta name="twitter:description" content={description} /><meta name="twitter:image" content={absolute(asset('social-card.jpg'))} />
+    <script type="application/ld+json" set:html={JSON.stringify(structured).replace(/</g, '\\u003c')} />
+  </head>
+  <body class:list={[`page-${page.split('/')[0]}`, { 'is-home': page === 'home' }]}>
+    <a href="#main" class="skip-link">{copy[lang].skip}</a>
+    <Header page={page} lang={lang} />
+    <main id="main" tabindex="-1"><slot /></main>
+    <Footer lang={lang} />
+  </body>
+</html>

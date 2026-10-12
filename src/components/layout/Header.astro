@@ -1,0 +1,45 @@
+---
+import { Image } from 'astro:assets';
+import { images } from '../../data/images';
+import { copy } from '../../data/site';
+import { route, type Language, type Page } from '../../lib/routes';
+import Button from '../ui/Button.astro';
+interface Props { page: Page | '404'; lang: Language }
+const { page, lang } = Astro.props;
+const c = copy[lang];
+const nav = ['services', 'projects', 'about', 'contact'] as const;
+---
+<header class:list={['site-header', { 'header-home': page === 'home', 'header-about': page === 'about', 'header-quote': page === 'quote' }]}>
+  <div class="header-inner container">
+    <a href={route('home', lang)} class="logo" aria-label={`Heral Metal — ${c.home}`}><Image src={images.logo} alt="Heral Metal" width={87} height={62} format="webp" loading="eager" /></a>
+    <nav class="desktop-nav" aria-label={lang === 'mk' ? 'Главна навигација' : 'Main navigation'}>
+      {nav.map(p => <a href={route(p, lang)} aria-current={page === p || page.startsWith(`${p}/`) ? 'page' : undefined}>{c[p]}</a>)}
+    </nav>
+    <div class="header-actions">
+      {page !== 'quote' && <Button href={route('quote', lang)} outline class="header-cta">{c.quote}</Button>}
+      <div class="languages" aria-label={lang === 'mk' ? 'Јазик' : 'Language'}>
+        <a href={route(page === '404' ? 'home' : page, 'mk')} lang="mk" hreflang="mk" aria-label="Македонски" aria-current={lang === 'mk' ? 'true' : undefined}>MK</a><span aria-hidden="true">/</span><a href={route(page === '404' ? 'home' : page, 'en')} lang="en" hreflang="en" aria-label="English" aria-current={lang === 'en' ? 'true' : undefined}>EN</a>
+      </div>
+      <details class="mobile-menu">
+        <summary aria-label={c.menu} aria-controls="mobile-navigation"><span class="menu-lines" aria-hidden="true"></span></summary>
+        <nav id="mobile-navigation" aria-label={lang === 'mk' ? 'Мобилна навигација' : 'Mobile navigation'}>
+          {nav.map(p => <a href={route(p, lang)} aria-current={page === p ? 'page' : undefined}>{c[p]}</a>)}
+          <Button href={route('quote', lang)}>{c.quote}</Button>
+        </nav>
+      </details>
+    </div>
+  </div>
+</header>
+<script>
+  const menu = document.querySelector<HTMLDetailsElement>('.mobile-menu');
+  const summary = menu?.querySelector('summary');
+  menu?.addEventListener('toggle', () => summary?.setAttribute('aria-expanded', String(menu.open)));
+  summary?.setAttribute('aria-expanded', 'false');
+  document.addEventListener('keydown', event => {
+    if (event.key === 'Escape' && menu?.open) { menu.open = false; summary?.focus(); }
+  });
+  document.addEventListener('click', event => {
+    if (menu?.open && event.target instanceof Node && !menu.contains(event.target)) menu.open = false;
+  });
+  window.matchMedia('(min-width: 900px)').addEventListener('change', event => { if (event.matches && menu) menu.open = false; });
+</script>

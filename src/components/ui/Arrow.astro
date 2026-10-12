@@ -1,0 +1,6 @@
+---
+import { asset } from '../../lib/routes';
+interface Props { variant?: 'blue' | 'white' | 'quote' }
+const { variant = 'white' } = Astro.props;
+---
+<span class="arrow" aria-hidden="true"><img src={asset(`assets/arrow-${variant}.svg`)} alt="" /></span>

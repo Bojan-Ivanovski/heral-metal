@@ -1,0 +1,8 @@
+---
+import Base from '../layouts/Base.astro';
+import Button from '../components/ui/Button.astro';
+import { copy } from '../data/site';
+import { route } from '../lib/routes';
+const c = copy.mk;
+---
+<Base page="404" lang="mk"><section class="container standard-page not-found"><p class="eyebrow">HERAL METAL / 404<span></span></p><h1 class="display-title">{c.notFound}</h1><p class="page-intro">{c.notFoundBody}</p><Button href={route('home')}>{c.backHome}</Button><p lang="en">Page not found. <a href={route('home', 'en')}>Continue in English</a>.</p></section></Base>

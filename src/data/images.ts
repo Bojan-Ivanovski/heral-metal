@@ -1,0 +1,13 @@
+import logo from '../assets/logo.png';
+import steel from '../assets/steel-structure.png';
+import machining from '../assets/machining.png';
+import connections from '../assets/connections.png';
+import maintenance from '../assets/maintenance.png';
+import pipeline from '../assets/pipeline.png';
+import workshop from '../assets/workshop.png';
+import team from '../assets/team.png';
+import iso9001 from '../assets/iso-9001.png';
+import iso45001 from '../assets/iso-45001.png';
+import iso14001 from '../assets/iso-14001.png';
+export const images = { logo, steel, machining, connections, maintenance, pipeline, workshop, team, 'iso-9001': iso9001, 'iso-45001': iso45001, 'iso-14001': iso14001 };
+export type ImageName = keyof typeof images;

@@ -1,0 +1,53 @@
+---
+import { getImage } from 'astro:assets';
+import Photo from '../ui/Photo.astro';
+import { copy, services } from '../../data/site';
+import { images, type ImageName } from '../../data/images';
+import type { Language } from '../../lib/routes';
+interface Props { lang: Language }
+const { lang } = Astro.props;
+const c = copy[lang];
+const photos: { name: ImageName; title: string }[] = [
+  { name: 'steel', title: lang === 'mk' ? 'Челични конструкции' : 'Steel structures' },
+  { name: 'machining', title: lang === 'mk' ? 'Прецизна машинска обработка' : 'Precision machining' },
+  ...services.map(s => ({ name: s.image, title: s[lang].title })),
+  { name: 'workshop', title: lang === 'mk' ? 'Производствена работилница' : 'Production workshop' },
+];
+const fullImages = await Promise.all(photos.map(p => getImage({ src: images[p.name], format: 'webp', quality: 90 })));
+---
+<div class="container standard-page">
+  <section class="page-heading"><p class="eyebrow">HERAL METAL / {c.projects.toUpperCase()}<span></span></p><h1 class="display-title">{c.projectsTitle}</h1><p class="page-intro">{c.projectsIntro}</p><p class="image-disclosure">{c.illustrative}</p></section>
+  <section class="project-grid" aria-label={c.projects}>{photos.map((photo, i) => <figure><button type="button" class="gallery-trigger" data-gallery-index={i} data-gallery-src={fullImages[i]?.src} data-gallery-title={photo.title} aria-label={`${c.viewImage} — ${photo.title}`}><Photo name={photo.name} alt={photo.title} /><span class="photo-expand" aria-hidden="true">↗</span></button><figcaption><span class="index">0{i + 1}</span><h2>{photo.title}</h2></figcaption></figure>)}</section>
+</div>
+<dialog class="gallery-dialog" aria-labelledby="gallery-caption">
+  <div class="gallery-toolbar"><p id="gallery-caption"></p><button type="button" data-gallery-close aria-label={c.close}>×</button></div>
+  <img id="gallery-image" src={fullImages[0]?.src} alt="" width={1152} height={928} />
+  <div class="gallery-controls"><button type="button" data-gallery-previous aria-label={c.previous}>←</button><span id="gallery-position" aria-live="polite"></span><button type="button" data-gallery-next aria-label={c.next}>→</button></div>
+</dialog>
+<script>
+  const dialog = document.querySelector<HTMLDialogElement>('.gallery-dialog');
+  const triggers = Array.from(document.querySelectorAll<HTMLButtonElement>('[data-gallery-index]'));
+  const image = document.querySelector<HTMLImageElement>('#gallery-image');
+  const caption = document.querySelector('#gallery-caption');
+  const position = document.querySelector('#gallery-position');
+  let current = 0;
+  let opener: HTMLButtonElement | undefined;
+  const show = (index: number) => {
+    current = (index + triggers.length) % triggers.length;
+    const trigger = triggers[current];
+    if (!trigger || !image) return;
+    image.src = trigger.dataset.gallerySrc || '';
+    image.alt = trigger.dataset.galleryTitle || '';
+    if (caption) caption.textContent = image.alt;
+    if (position) position.textContent = `${current + 1} / ${triggers.length}`;
+  };
+  triggers.forEach((trigger, index) => trigger.addEventListener('click', () => {
+    opener = trigger; show(index); dialog?.showModal(); document.body.classList.add('dialog-open');
+  }));
+  dialog?.querySelector('[data-gallery-close]')?.addEventListener('click', () => dialog.close());
+  dialog?.querySelector('[data-gallery-previous]')?.addEventListener('click', () => show(current - 1));
+  dialog?.querySelector('[data-gallery-next]')?.addEventListener('click', () => show(current + 1));
+  dialog?.addEventListener('keydown', event => { if (event.key === 'ArrowLeft') show(current - 1); if (event.key === 'ArrowRight') show(current + 1); });
+  dialog?.addEventListener('click', event => { if (event.target === dialog) dialog.close(); });
+  dialog?.addEventListener('close', () => { document.body.classList.remove('dialog-open'); opener?.focus(); });
+</script>

@@ -1,0 +1,25 @@
+---
+import Base from '../layouts/Base.astro';
+import Home from '../components/sections/Home.astro';
+import About from '../components/sections/About.astro';
+import Services from '../components/sections/Services.astro';
+import Projects from '../components/sections/Projects.astro';
+import Quote from '../components/sections/Quote.astro';
+import Contact from '../components/sections/Contact.astro';
+import Privacy from '../components/sections/Privacy.astro';
+import { pages, type Page, type Language } from '../lib/routes';
+export function getStaticPaths() {
+  return (['mk', 'en'] as const).flatMap(lang => pages.map(page => ({ params: { route: [lang === 'en' ? 'en' : '', page === 'home' ? '' : page].filter(Boolean).join('/') || undefined }, props: { page, lang } })));
+}
+interface Props { page: Page; lang: Language }
+const { page, lang } = Astro.props;
+---
+<Base page={page} lang={lang}>
+  {page === 'home' && <Home lang={lang} />}
+  {page === 'about' && <About lang={lang} />}
+  {(page === 'services' || page.startsWith('services/')) && <Services lang={lang} serviceId={page.split('/')[1]} />}
+  {page === 'projects' && <Projects lang={lang} />}
+  {page === 'quote' && <Quote lang={lang} />}
+  {page === 'contact' && <Contact lang={lang} />}
+  {page === 'privacy' && <Privacy lang={lang} />}
+</Base>

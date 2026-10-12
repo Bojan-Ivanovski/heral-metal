@@ -1,0 +1,95 @@
+---
+import Photo from '../ui/Photo.astro';
+import Button from '../ui/Button.astro';
+import Arrow from '../ui/Arrow.astro';
+import { copy, contactEmail, formKey, services } from '../../data/site';
+import { route, type Language } from '../../lib/routes';
+interface Props { lang: Language }
+const { lang } = Astro.props;
+const c = copy[lang];
+---
+<div class="quote-layout container">
+  <section class="quote-copy" aria-labelledby="quote-title">
+    <p class="eyebrow">HERAL METAL / {lang === 'mk' ? 'ПОБАРУВАЊЕ ПОНУДА' : 'QUOTE REQUEST'}<span></span></p>
+    <h1 id="quote-title" class="quote-title">{c.quoteHeading.map((line, i) => <span class:list={{ blue: i === 1 }}>{line}</span>)}</h1>
+    <p>{c.quoteIntro}</p>
+    <Button href="#quote-form" class="quote-anchor">{c.quote.toUpperCase()}</Button>
+    <Photo name="steel" alt={lang === 'mk' ? 'Челична конструкција во индустриска работилница' : 'Steel structure in an industrial workshop'} eager widths={[400, 800]} sizes="(max-width: 999px) 100vw, 390px" />
+  </section>
+  <form id="quote-form" class="quote-form" action="https://api.web3forms.com/submit" method="POST" enctype="multipart/form-data" data-sending={c.sending} data-success={c.success} data-error={c.error} data-file-error={c.fileError}>
+    <input type="hidden" name="access_key" value={formKey} /><input type="hidden" name="subject" value="Heral Metal — Quote request" /><input type="hidden" name="from_name" value="Heral Metal website" />
+    <input type="checkbox" name="botcheck" class="honeypot" tabindex="-1" autocomplete="off" aria-hidden="true" />
+    <div class="form-header"><p class="eyebrow">{c.formEyebrow}</p><h2>{c.formTitle}</h2><p>{c.formIntro}</p></div>
+    <fieldset class="form-section"><legend>{c.details}</legend>
+      <div class="contact-fields">
+        <label for="full-name">{c.name}<span class="sr-only"> — {c.required}</span><input id="full-name" name="name" autocomplete="name" placeholder={c.namePlaceholder} required maxlength="150" /></label>
+        <label for="company">{c.company}<span class="sr-only"> — {c.optional}</span><input id="company" name="company" autocomplete="organization" placeholder={c.companyPlaceholder} maxlength="200" /></label>
+        <label for="email">{c.email}<span class="sr-only"> — {c.required}</span><input id="email" name="email" type="email" autocomplete="email" placeholder="name@company.mk" required maxlength="254" /></label>
+        <label for="phone">{c.phone}<span class="sr-only"> — {c.optional}</span><input id="phone" name="phone" type="tel" autocomplete="tel" placeholder="+389 00 000 000" maxlength="40" /></label>
+      </div>
+    </fieldset>
+    <fieldset class="form-section"><legend>{c.selectService}</legend><div class="service-options">
+      {services.map((service, index) => <label class="service-option"><span class="service-option-top"><span class="index">{service.number}</span><input type="radio" name="service" value={service.id} checked={index === 0} required /></span><strong>{service[lang].title}</strong><span>{service[lang].short}</span></label>)}
+    </div></fieldset>
+    <fieldset class="form-section"><legend>{c.projectDetails}</legend><label for="description">{c.description}<span class="sr-only"> — {c.required}</span><textarea id="description" name="message" rows="3" placeholder={c.descriptionPlaceholder} required maxlength="6000"></textarea></label></fieldset>
+    <fieldset class="form-section"><legend>{c.attachments}</legend>
+      <label class="upload-area" for="attachment"><span>{c.upload}</span><span class="file-hint" id="file-hint">{c.fileHint}</span><input id="attachment" name="attachment" type="file" accept=".pdf,.jpg,.jpeg,.png,.dwg" aria-describedby="file-hint file-status" /></label>
+      <div class="file-summary"><p id="file-status" role="status"></p><button type="button" id="remove-file" hidden>{c.remove}</button></div>
+    </fieldset>
+    <div class="consent-row"><input id="consent" type="checkbox" name="consent" value="Agreed to contact about this request" required /><label for="consent">{c.consent} <a href={route('privacy', lang)}>{c.privacy}</a></label></div>
+    <button type="submit" class="button submit-button"><span>{c.submit}</span><Arrow variant="quote" /></button>
+    <p id="form-status" class="form-status" role="status" tabindex="-1" hidden></p>
+    <a class="form-email" href={`mailto:${contactEmail}`} hidden>{contactEmail}</a>
+    <noscript><p class="noscript-note">{lang === 'mk' ? 'Документот е незадолжителен. По испраќањето ќе се отвори страницата за потврда на Web3Forms.' : 'The document is optional. Submission opens the Web3Forms confirmation page.'}</p></noscript>
+  </form>
+</div>
+<script>
+  import { attachmentError } from '../../lib/form';
+  const form = document.querySelector<HTMLFormElement>('#quote-form');
+  const file = document.querySelector<HTMLInputElement>('#attachment');
+  const fileStatus = document.querySelector<HTMLElement>('#file-status');
+  const removeFile = document.querySelector<HTMLButtonElement>('#remove-file');
+  const status = document.querySelector<HTMLElement>('#form-status');
+  const submit = form?.querySelector<HTMLButtonElement>('[type="submit"]');
+  const submitLabel = submit?.querySelector('span');
+  const initialLabel = submitLabel?.textContent || '';
+  const requested = new URLSearchParams(window.location.search).get('service');
+  form?.querySelectorAll<HTMLInputElement>('[name="service"]').forEach(radio => { if (radio.value === requested) radio.checked = true; });
+  const validateFile = () => {
+    const selected = file?.files?.[0];
+    const invalid = selected ? attachmentError(selected) : false;
+    file?.setCustomValidity(invalid ? form?.dataset.fileError || '' : '');
+    if (fileStatus) { fileStatus.textContent = invalid ? form?.dataset.fileError || '' : selected ? `${selected.name} (${(selected.size / 1048576).toFixed(2)} MB)` : ''; fileStatus.classList.toggle('error-text', invalid); }
+    if (removeFile) removeFile.hidden = !selected;
+    return !invalid;
+  };
+  file?.addEventListener('change', validateFile);
+  removeFile?.addEventListener('click', () => { if (file) { file.value = ''; validateFile(); file.focus(); } });
+  form?.addEventListener('submit', async event => {
+    event.preventDefault();
+    if (!validateFile() || !form.reportValidity() || submit?.disabled) return;
+    if (submit) submit.disabled = true;
+    form.setAttribute('aria-busy', 'true');
+    if (submitLabel) submitLabel.textContent = form.dataset.sending || '';
+    if (status) { status.hidden = false; status.textContent = form.dataset.sending || ''; status.className = 'form-status'; }
+    const emailFallback = form.querySelector<HTMLAnchorElement>('.form-email');
+    if (emailFallback) emailFallback.hidden = true;
+    try {
+      const data = new FormData(form);
+      if (!file?.files?.length) data.delete('attachment');
+      const response = await fetch(form.action, { method: 'POST', body: data, headers: { Accept: 'application/json' }, signal: AbortSignal.timeout(20000) });
+      const result: { success?: boolean } = await response.json();
+      if (!response.ok || result.success !== true) throw new Error('Submission failed');
+      form.reset(); validateFile();
+      if (status) { status.textContent = form.dataset.success || ''; status.classList.add('success-text'); }
+    } catch {
+      if (status) { status.textContent = form.dataset.error || ''; status.classList.add('error-text'); }
+      if (emailFallback) emailFallback.hidden = false;
+    } finally {
+      if (submit) submit.disabled = false;
+      form.removeAttribute('aria-busy');
+      if (submitLabel) submitLabel.textContent = initialLabel;
+      status?.focus();
+    }
+  });
+</script>

@@ -1,0 +1,33 @@
+---
+import Photo from '../ui/Photo.astro';
+import Button from '../ui/Button.astro';
+import { copy, services } from '../../data/site';
+import { route, type Language } from '../../lib/routes';
+interface Props { lang: Language }
+const { lang } = Astro.props;
+const c = copy[lang];
+---
+<section class="home-hero design-width" aria-labelledby="hero-title">
+  <div class="hero-content">
+    <div class="hero-copy">
+      <p class="eyebrow">HERAL METAL / {c.industry}<span aria-hidden="true"></span></p>
+      <h1 id="hero-title" class="hero-title">{c.hero.map((line, i) => <span class:list={{ blue: i === 2 }}>{line}</span>)}</h1>
+      <p class="hero-description">{c.tagline}</p>
+      <Button href={route('quote', lang)}>{c.quote}</Button>
+    </div>
+    <div class="industrial-showcase">
+      <Photo name="steel" alt={lang === 'mk' ? 'Челична конструкција во индустриска работилница' : 'Steel structure in an industrial workshop'} class="hero-steel" eager widths={[400, 600, 900, 1152]} sizes="(max-width: 899px) 80vw, (min-width: 1440px) 598px, 42vw" />
+      <div class="machining-inset"><Photo name="machining" alt={lang === 'mk' ? 'Прецизна машинска обработка на метал' : 'Precision machining of metal'} eager widths={[400, 800]} sizes="(max-width: 899px) 44vw, 344px" /></div>
+      <span class="annotation-top" aria-hidden="true"></span><span class="annotation-cross" aria-hidden="true"></span>
+      <p class="material-note">{c.precision}<br />{c.value}</p>
+    </div>
+  </div>
+  <div class="hero-divider"></div>
+</section>
+<section class="expertise container" aria-labelledby="expertise-title">
+  <div class="expertise-heading"><h2 id="expertise-title">{lang === 'mk' ? <><span>Нашата</span><span>експертиза</span></> : <><span>Our</span><span>expertise</span></>}</h2><span class="heading-rule" aria-hidden="true"></span></div>
+  {services.map(service => <article class="expertise-item"><p class="index">{service.number}<span></span></p><h3><a href={route(`services/${service.id}`, lang)}>{service[lang].title}</a></h3><p>{service[lang].description}</p></article>)}
+</section>
+<section class="home-gallery design-width" aria-label={c.projects}>
+  {services.map(service => <a href={route('projects', lang)} aria-label={`${c.projects} — ${service[lang].title}`}><Photo name={service.image} alt={service[lang].title} sizes="(max-width: 599px) 100vw, (min-width: 1440px) 480px, 33vw" /></a>)}
+</section>

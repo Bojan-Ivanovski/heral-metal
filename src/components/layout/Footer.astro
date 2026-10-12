@@ -1,0 +1,14 @@
+---
+import { copy } from '../../data/site';
+import { route, type Language } from '../../lib/routes';
+interface Props { lang: Language }
+const { lang } = Astro.props;
+const c = copy[lang];
+---
+<footer class="site-footer container">
+  <a href={route('home', lang)} class="footer-brand">HERAL METAL</a>
+  <p>{c.tagline}</p>
+  <nav aria-label={lang === 'mk' ? 'Навигација во подножјето' : 'Footer navigation'}>
+    {(['services', 'projects', 'about', 'contact', 'privacy'] as const).map(p => <a href={route(p, lang)}>{c[p]}</a>)}
+  </nav>
+</footer>

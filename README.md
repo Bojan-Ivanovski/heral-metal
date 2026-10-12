@@ -53,6 +53,14 @@ To use an installed compatible Chromium browser, set `BROWSER_EXECUTABLE`, e.g. 
 
 ## Deployment
 
+From a normal terminal with GitHub CLI authentication and a compatible browser, run:
+
+```sh
+BROWSER_EXECUTABLE=/opt/brave-bin/brave bash scripts/publish.sh
+```
+
+This verifies the production build, records browser and Lighthouse results, commits and pushes to the public repository, configures Pages through `gh`, waits for the matching workflow run and checks the deployed routes. It stops if verification or deployment fails. Reports and the final commit hash are saved in `test-results/`.
+
 Enable **Settings → Pages → Source → GitHub Actions**. The workflow in `.github/workflows/deploy.yml` runs on `main` pushes, pull requests and manual dispatch. It installs from the lockfile, checks types, builds, tests links/assets/form validation, runs browser and accessibility checks, collects Lighthouse reports, uploads the static Pages artifact and deploys using official GitHub actions. Pull requests verify without deploying. Deployment uses `pages: write` and `id-token: write`, with read-only repository contents permission.
 
 See `docs/design-system.md` for the extracted specification, original asset mapping and documented visual corrections. See `docs/verification.md` for actual verification results and external prerequisites.

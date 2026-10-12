@@ -18,7 +18,7 @@ const nav = ['services', 'projects', 'about', 'contact'] as const;
     <div class="header-actions">
       {page !== 'quote' && <Button href={route('quote', lang)} outline class="header-cta">{c.quote}</Button>}
       <div class="languages" aria-label={lang === 'mk' ? 'Јазик' : 'Language'}>
-        <a href={route(page === '404' ? 'home' : page, 'mk')} lang="mk" hreflang="mk" aria-label="Македонски" aria-current={lang === 'mk' ? 'true' : undefined}>MK</a><span aria-hidden="true">/</span><a href={route(page === '404' ? 'home' : page, 'en')} lang="en" hreflang="en" aria-label="English" aria-current={lang === 'en' ? 'true' : undefined}>EN</a>
+        <a href={route(page === '404' ? 'home' : page, 'mk')} lang="mk" hreflang="mk" aria-label="MK — Македонски" aria-current={lang === 'mk' ? 'true' : undefined}>MK</a><span aria-hidden="true">/</span><a href={route(page === '404' ? 'home' : page, 'en')} lang="en" hreflang="en" aria-label="EN — English" aria-current={lang === 'en' ? 'true' : undefined}>EN</a>
       </div>
       <details class="mobile-menu">
         <summary aria-label={c.menu} aria-controls="mobile-navigation"><span class="menu-lines" aria-hidden="true"></span></summary>
@@ -36,7 +36,7 @@ const nav = ['services', 'projects', 'about', 'contact'] as const;
   menu?.addEventListener('toggle', () => summary?.setAttribute('aria-expanded', String(menu.open)));
   summary?.setAttribute('aria-expanded', 'false');
   document.addEventListener('keydown', event => {
-    if (event.key === 'Escape' && menu?.open) { menu.open = false; summary?.focus(); }
+    if (event.key === 'Escape' && menu?.open) { event.preventDefault(); menu.open = false; summary?.focus(); }
   });
   document.addEventListener('click', event => {
     if (menu?.open && event.target instanceof Node && !menu.contains(event.target)) menu.open = false;

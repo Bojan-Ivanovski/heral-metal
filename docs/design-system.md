@@ -74,6 +74,7 @@ Six Figma prototype reactions link logos to Home, About navigation to About, and
 - The Home frame has a white 11.35px canvas offset and clips the bottom of its photograph strip. The website removes the accidental canvas offset and shows the complete strip.
 - The About headline sits at y=0 beneath an opaque header in Figma. It is restored below the header, moving the following content slightly lower.
 - Language links have at least 24px targets. Mobile inputs use 16px text to avoid automatic viewport zoom.
+- On small mobile screens the hero material note moves beneath the photographs so it remains readable without overlapping the machining inset.
 - The original consent checkbox is visually checked in Figma. Actual consent starts unchecked and must be selected by the visitor.
 - Figma says attachments up to 10 MB; Web3Forms documents a 5 MB standard attachment limit. The interface accurately uses 5 MB. Attachment delivery requires the provider's Pro plan and remains an external configuration prerequisite.
 - No company address, telephone, clients, prices, testimonials, project dates or additional certification claims are invented. Company founding and certificate content are carried over from the supplied design and were not independently verified. Gallery photographs are labeled illustrative.

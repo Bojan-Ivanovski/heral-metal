@@ -13,7 +13,7 @@ const c = copy[lang];
     <p class="eyebrow">HERAL METAL / {lang === 'mk' ? 'ПОБАРУВАЊЕ ПОНУДА' : 'QUOTE REQUEST'}<span></span></p>
     <h1 id="quote-title" class="quote-title">{c.quoteHeading.map((line, i) => <span class:list={{ blue: i === 1 }}>{line}</span>)}</h1>
     <p>{c.quoteIntro}</p>
-    <Button href="#quote-form" class="quote-anchor">{c.quote.toUpperCase()}</Button>
+    <Button href="#quote-form" class="quote-anchor">{c.quote}</Button>
     <Photo name="steel" alt={lang === 'mk' ? 'Челична конструкција во индустриска работилница' : 'Steel structure in an industrial workshop'} eager widths={[400, 800]} sizes="(max-width: 999px) 100vw, 390px" />
   </section>
   <form id="quote-form" class="quote-form" action="https://api.web3forms.com/submit" method="POST" enctype="multipart/form-data" data-sending={c.sending} data-success={c.success} data-error={c.error} data-file-error={c.fileError}>

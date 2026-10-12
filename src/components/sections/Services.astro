@@ -1,6 +1,7 @@
 ---
 import Photo from '../ui/Photo.astro';
 import Button from '../ui/Button.astro';
+import PageHeading from '../ui/PageHeading.astro';
 import { copy, services } from '../../data/site';
 import { route, type Language } from '../../lib/routes';
 interface Props { lang: Language; serviceId?: string }
@@ -12,10 +13,10 @@ const selected = services.find(s => s.id === serviceId);
   <nav class="breadcrumbs" aria-label={lang === 'mk' ? 'Патека' : 'Breadcrumb'}><a href={route('home', lang)}>{c.home}</a><span aria-hidden="true">/</span>{selected ? <><a href={route('services', lang)}>{c.services}</a><span aria-hidden="true">/</span><span>{selected[lang].title}</span></> : <span>{c.services}</span>}</nav>
   {selected ? <>
     <section class="service-hero"><div><p class="eyebrow">HERAL METAL / {selected.number}<span></span></p><h1 class="display-title">{selected[lang].title}</h1><p class="page-intro">{selected[lang].description}</p><Button href={`${route('quote', lang)}?service=${selected.id}`}>{c.quote}</Button></div><Photo name={selected.image} alt={selected[lang].title} eager /></section>
-    <section class="service-scope"><h2>{c.scope}</h2><ul>{selected[lang].scope.map(item => <li>{item}</li>)}</ul></section>
-    <section class="process-section"><h2>{c.process}</h2><div class="process-grid">{c.steps.map((title, i) => <article><p class="index">0{i + 1}<span></span></p><h3>{title}</h3><p>{c.stepDetails[i]}</p></article>)}</div></section>
+    <section class="service-scope"><h2 class="section-title">{c.scope}</h2><ul>{selected[lang].scope.map(item => <li>{item}</li>)}</ul></section>
+    <section class="process-section"><h2 class="section-title">{c.process}</h2><div class="process-grid">{c.steps.map((title, i) => <article><p class="index">0{i + 1}<span></span></p><h3>{title}</h3><p>{c.stepDetails[i]}</p></article>)}</div></section>
   </> : <>
-    <section class="page-heading"><p class="eyebrow">HERAL METAL / {c.services.toUpperCase()}<span></span></p><h1 class="display-title">{c.servicesTitle}</h1><p class="page-intro">{c.servicesIntro}</p></section>
+    <PageHeading eyebrow={`HERAL METAL / ${c.services}`} title={c.servicesTitle} description={c.servicesIntro} />
     <div class="service-grid">{services.map(service => <article class="service-card"><Photo name={service.image} alt={service[lang].title} /><div><p class="index">{service.number}<span></span></p><h2>{service[lang].title}</h2><p>{service[lang].description}</p><Button href={route(`services/${service.id}`, lang)} outline>{c.learn}</Button></div></article>)}</div>
   </>}
 </div>

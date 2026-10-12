@@ -4,14 +4,35 @@ import assert from 'node:assert/strict';
 import { serveDist } from './serve-dist.mjs';
 const widths = [320, 375, 430, 768, 1024, 1280, 1440, 1920, 2560, 3440];
 const routes = ['', 'services/', 'services/metal-structures/', 'services/machine-maintenance/', 'services/gas-pipelines/', 'projects/', 'about/', 'contact/', 'quote/', 'privacy/'];
-const allRoutes = [...routes, ...routes.map(route => `en/${route}`)];
+const allRoutes = [...routes, ...routes.map(route => `en/${route}`), '404.html'];
 const output = 'test-results';
 await mkdir(output, { recursive: true });
 const { server, url } = await serveDist();
 let browser;
-const results = { completed: false, error: null, viewports: widths, routes: allRoutes, overflowChecks: 0, accessibilityChecks: 0, runtimeErrors: [], failedResources: [], violations: [], layoutFailures: [], functional: [] };
+const results = { completed: false, error: null, viewports: widths, routes: allRoutes, overflowChecks: 0, accessibilityChecks: 0, consistencyChecks: 0, runtimeErrors: [], failedResources: [], violations: [], layoutFailures: [], functional: [] };
 try {
   browser = await chromium.launch({ executablePath: process.env.BROWSER_EXECUTABLE || undefined, headless: true, args: ['--no-sandbox', '--disable-dev-shm-usage'] });
+  // Reduced-motion tests alone would conceal an accidentally restored page animation.
+  const ordinary = await browser.newContext({ reducedMotion: 'no-preference', viewport: { width: 1440, height: 1000 } });
+  const transitions = [];
+  await ordinary.addInitScript(() => {
+    for (const name of ['pageswap', 'pagereveal']) addEventListener(name, event => console.debug(`navigation-transition:${Boolean(event.viewTransition)}`));
+  });
+  const navigation = await ordinary.newPage();
+  navigation.on('console', message => { if (message.text().startsWith('navigation-transition:')) transitions.push(message.text()); });
+  await navigation.goto(url);
+  await navigation.locator('.desktop-nav a[href$="about/"]').click();
+  await navigation.waitForURL('**/about/');
+  await navigation.locator('.header-cta').click();
+  await navigation.waitForURL('**/quote/');
+  await navigation.goBack();
+  assert.ok(navigation.url().endsWith('/about/'));
+  await navigation.goForward();
+  assert.ok(navigation.url().endsWith('/quote/'));
+  assert.ok(transitions.every(event => event === 'navigation-transition:false'), 'Normal navigation must never activate a document transition');
+  assert.equal(await navigation.locator('body').evaluate(element => getComputedStyle(element).opacity), '1');
+  await ordinary.close();
+  results.functional.push('Default-motion navigation and browser Back/Forward: no document transitions or hidden initial content');
   const context = await browser.newContext({ reducedMotion: 'reduce' });
   const page = await context.newPage();
   page.setDefaultTimeout(10000);
@@ -39,6 +60,8 @@ try {
   const trigger = page.locator('[data-gallery-index="0"]');
   await trigger.click();
   assert.equal(await page.locator('dialog').evaluate(el => el.open), true);
+  assert.deepEqual(await page.locator('#gallery-image').evaluate(element => { const style = getComputedStyle(element); return [style.objectFit, style.transform, style.filter]; }), ['contain', 'none', 'none']);
+  await page.screenshot({ path: `${output}/gallery-open-375.png`, fullPage: true });
   await page.keyboard.press('ArrowRight');
   assert.equal(await page.locator('#gallery-position').textContent(), '2 / 6');
   await page.keyboard.press('Escape');
@@ -98,6 +121,7 @@ try {
     assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
   }
   results.functional.push('Layout at 720 CSS pixels, equivalent to 200% zoom on a 1440px viewport');
+  const headerStandards = new Map();
   for (const width of widths) {
     await page.setViewportSize({ width, height: 1000 });
     for (const route of allRoutes) {
@@ -122,9 +146,37 @@ try {
           }
           return false;
         }).map(el => ({ text: el.textContent, width: el.clientWidth, scrollWidth: el.scrollWidth }));
-        return { overflow, broken, images, clippedText };
+        const overlaps = [];
+        for (const grid of document.querySelectorAll('.service-grid,.project-grid,.certificate-grid,.process-grid,.contact-grid,.contact-fields,.service-options')) {
+          const children = [...grid.children].map(element => element.getBoundingClientRect());
+          for (let i = 0; i < children.length; i++) for (let j = i + 1; j < children.length; j++) {
+            const a = children[i], b = children[j];
+            if (Math.min(a.right,b.right) - Math.max(a.left,b.left) > 1 && Math.min(a.bottom,b.bottom) - Math.max(a.top,b.top) > 1) overlaps.push(grid.className);
+          }
+        }
+        const misaligned = [];
+        for (const selector of ['.service-card', '.certificate-card', '.process-grid > article']) {
+          const rows = new Map();
+          for (const card of document.querySelectorAll(selector)) {
+            const rect = card.getBoundingClientRect();
+            const key = Math.round(rect.top);
+            const value = selector === '.service-card' ? card.querySelector('.button').getBoundingClientRect().bottom : selector === '.certificate-card' ? rect.bottom : card.querySelector('p:last-child').getBoundingClientRect().top;
+            rows.set(key, [...(rows.get(key) || []), value]);
+          }
+          for (const values of rows.values()) if (Math.max(...values) - Math.min(...values) > 1) misaligned.push(selector);
+        }
+        const nav = document.querySelector('.desktop-nav');
+        const actions = document.querySelector('.header-actions').getBoundingClientRect();
+        const navRect = nav.getBoundingClientRect();
+        const footer = document.querySelector('.site-footer').getBoundingClientRect();
+        const standards = { lang: document.documentElement.lang, navX: navRect.x, navWidth: navRect.width, navFont: getComputedStyle(nav).fontSize, actionsRight: actions.right, footerX: footer.x, footerWidth: footer.width };
+        return { overflow, broken, images, clippedText, overlaps, misaligned, standards };
       });
-      if (layout.overflow || layout.broken.length || layout.clippedText.length) {
+      const key = `${width}-${layout.standards.lang}`;
+      if (!headerStandards.has(key)) headerStandards.set(key, layout.standards);
+      assert.deepEqual(layout.standards, headerStandards.get(key), `${route} @ ${width}: shared header and footer geometry`);
+      results.consistencyChecks++;
+      if (layout.overflow || layout.broken.length || layout.clippedText.length || layout.overlaps.length || layout.misaligned.length) {
         results.layoutFailures.push({ route, width, layout });
         await page.screenshot({ path: `${output}/failure-${route.replace(/\//g, '-') || 'home'}-${width}.png`, fullPage: true });
       }
@@ -142,7 +194,7 @@ try {
   }
   assert.deepEqual(results.runtimeErrors, [], 'No browser runtime errors');
   assert.deepEqual(results.failedResources, [], 'No failed local resources');
-  assert.deepEqual(results.layoutFailures, [], 'No horizontal overflow, clipped text or broken images');
+  assert.deepEqual(results.layoutFailures, [], 'No overflow, clipped text, broken images, grid overlaps or misaligned card rows');
   assert.deepEqual(results.violations, [], 'No automated WCAG violations');
   results.completed = true;
   console.log(JSON.stringify(results, null, 2));

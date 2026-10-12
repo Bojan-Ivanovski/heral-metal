@@ -9,21 +9,21 @@ const { page, lang } = Astro.props;
 const c = copy[lang];
 const nav = ['services', 'projects', 'about', 'contact'] as const;
 ---
-<header class:list={['site-header', { 'header-home': page === 'home', 'header-about': page === 'about', 'header-quote': page === 'quote' }]}>
+<header class="site-header">
   <div class="header-inner container">
     <a href={route('home', lang)} class="logo" aria-label={`Heral Metal — ${c.home}`}><Image src={images.logo} alt="Heral Metal" width={87} height={62} format="webp" loading="eager" /></a>
     <nav class="desktop-nav" aria-label={lang === 'mk' ? 'Главна навигација' : 'Main navigation'}>
       {nav.map(p => <a href={route(p, lang)} aria-current={page === p || page.startsWith(`${p}/`) ? 'page' : undefined}>{c[p]}</a>)}
     </nav>
     <div class="header-actions">
-      {page !== 'quote' && <Button href={route('quote', lang)} outline class="header-cta">{c.quote}</Button>}
+      {page !== 'quote' && <Button href={route('quote', lang)} outline size="compact" class="header-cta">{c.quote}</Button>}
       <div class="languages" aria-label={lang === 'mk' ? 'Јазик' : 'Language'}>
         <a href={route(page === '404' ? 'home' : page, 'mk')} lang="mk" hreflang="mk" aria-label="MK — Македонски" aria-current={lang === 'mk' ? 'true' : undefined}>MK</a><span aria-hidden="true">/</span><a href={route(page === '404' ? 'home' : page, 'en')} lang="en" hreflang="en" aria-label="EN — English" aria-current={lang === 'en' ? 'true' : undefined}>EN</a>
       </div>
       <details class="mobile-menu">
         <summary aria-label={c.menu} aria-controls="mobile-navigation"><span class="menu-lines" aria-hidden="true"></span></summary>
         <nav id="mobile-navigation" aria-label={lang === 'mk' ? 'Мобилна навигација' : 'Mobile navigation'}>
-          {nav.map(p => <a href={route(p, lang)} aria-current={page === p ? 'page' : undefined}>{c[p]}</a>)}
+          {nav.map(p => <a href={route(p, lang)} aria-current={page === p || page.startsWith(`${p}/`) ? 'page' : undefined}>{c[p]}</a>)}
           <Button href={route('quote', lang)}>{c.quote}</Button>
         </nav>
       </details>

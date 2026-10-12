@@ -49,7 +49,7 @@ test('sitemap lists all localized pages and the correct hosting URL', async () =
   assert.ok(!sitemap.includes('404'));
   assert.ok((await readFile(path.join(dist, 'robots.txt'), 'utf8')).includes(`${site}${base}/sitemap.xml`));
 });
-test('every original Figma asset is present and all style assets resolve', async () => {
+test('every original media asset is present and all style assets resolve', async () => {
   const sources = (await walk(path.resolve('src/assets'))).filter(f => f.endsWith('.png'));
   assert.equal(sources.length, 11);
   for (const source of sources) assert.ok((await stat(source)).size > 0);
@@ -61,5 +61,11 @@ test('every original Figma asset is present and all style assets resolve', async
       assert.ok(url.startsWith(`${base}/`), `CSS asset missing base: ${url}`);
       assert.ok((await stat(path.join(dist, url.slice(base.length)))).size > 0);
     }
+  }
+});
+test('production navigation has no document transition code or initial reveal animation', async () => {
+  for (const file of files.filter(file => /\.(css|js)$/.test(file))) {
+    const text = await readFile(file, 'utf8');
+    assert.doesNotMatch(text, /@view-transition|view-transition-name|::view-transition|page-slide|startViewTransition|ClientRouter/, `${file}: obsolete page transition behavior`);
   }
 });

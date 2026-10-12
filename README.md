@@ -1,5 +1,9 @@
 # Heral Metal
 
+The current UI consistency rules and verification record are documented in [docs/consistency-audit.md](docs/consistency-audit.md). Shared layout and typography tokens live in `src/styles/global.css`; equivalent page introductions use `PageHeading.astro`. Page navigation uses normal browser links and history without transitions.
+
+To capture every route for visual review, run `BROWSER_EXECUTABLE=/opt/brave-bin/brave node scripts/audit-capture.mjs after` after building. Captures include 375, 768 and 1440px layouts, measurements and contact sheets in `test-results/consistency/after/`. The browser suite checks all 21 HTML routes at ten widths, shared header/footer geometry, grid overlaps, card alignment, accessibility and existing interactions.
+
 Static Astro website implemented from the supplied Figma design, with Macedonian and English content, responsive layouts and GitHub Pages deployment.
 
 Repository: https://github.com/Bojan-Ivanovski/heral-metal

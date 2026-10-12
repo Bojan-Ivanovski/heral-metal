@@ -1,6 +1,7 @@
 ---
 import { getImage } from 'astro:assets';
 import Photo from '../ui/Photo.astro';
+import PageHeading from '../ui/PageHeading.astro';
 import { copy, services } from '../../data/site';
 import { images, type ImageName } from '../../data/images';
 import type { Language } from '../../lib/routes';
@@ -16,7 +17,7 @@ const photos: { name: ImageName; title: string }[] = [
 const fullImages = await Promise.all(photos.map(p => getImage({ src: images[p.name], format: 'webp', quality: 90 })));
 ---
 <div class="container standard-page">
-  <section class="page-heading"><p class="eyebrow">HERAL METAL / {c.projects.toUpperCase()}<span></span></p><h1 class="display-title">{c.projectsTitle}</h1><p class="page-intro">{c.projectsIntro}</p><p class="image-disclosure">{c.illustrative}</p></section>
+  <PageHeading eyebrow={`HERAL METAL / ${c.projects}`} title={c.projectsTitle} description={c.projectsIntro}><p class="image-disclosure">{c.illustrative}</p></PageHeading>
   <section class="project-grid" aria-label={c.projects}>{photos.map((photo, i) => <figure><button type="button" class="gallery-trigger" data-gallery-index={i} data-gallery-src={fullImages[i]?.src} data-gallery-title={photo.title} aria-label={`${c.viewImage} — ${photo.title}`}><Photo name={photo.name} alt={photo.title} /><span class="photo-expand" aria-hidden="true">↗</span></button><figcaption><span class="index">0{i + 1}</span><h2>{photo.title}</h2></figcaption></figure>)}</section>
 </div>
 <dialog class="gallery-dialog" aria-labelledby="gallery-caption">

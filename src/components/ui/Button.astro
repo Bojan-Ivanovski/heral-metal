@@ -1,6 +1,6 @@
 ---
 import Arrow from './Arrow.astro';
-interface Props { href: string; outline?: boolean; class?: string }
-const { href, outline = false, class: className = '' } = Astro.props;
+interface Props { href: string; outline?: boolean; size?: 'default' | 'compact'; class?: string }
+const { href, outline = false, size = 'default', class: className = '' } = Astro.props;
 ---
-<a href={href} class:list={['button', { 'button-outline': outline }, className]}><slot /><Arrow variant={outline ? 'blue' : 'white'} /></a>
+<a href={href} class:list={['button', { 'button-outline': outline, 'button-compact': size === 'compact' }, className]}><slot /><Arrow variant={outline ? 'blue' : 'white'} /></a>

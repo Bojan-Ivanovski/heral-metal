@@ -53,7 +53,7 @@ Fresh verification completed for this refinement on 2026-10-12:
 - Astro/TypeScript: zero errors, warnings or hints. Production build and all eight static/form/server/transition regression tests pass. There is no separate lint command in this project.
 - Original media, branding, font files, dependency manifest and lockfile are unchanged.
 
-### Fresh Lighthouse mobile audit
+### Fresh local Lighthouse mobile audit
 
 | Route | Performance | Accessibility | Best practices | SEO |
 |---|---:|---:|---:|---:|
@@ -62,4 +62,10 @@ Fresh verification completed for this refinement on 2026-10-12:
 | quote/ | 94 | 100 | 100 | 100 |
 | en/services/ | 96 | 100 | 100 | 100 |
 
-All four audits report zero layout shift and zero blocking time. The first audit process terminated after Home; the fresh retry completed all four routes successfully. Scores are measurements of this run. Automated checks do not establish full WCAG conformance; a manual screen-reader audit and real Web3Forms inbox delivery were not performed. No email was sent by the tests.
+All four local audits report zero layout shift and zero blocking time. The first audit process terminated after Home; the fresh retry completed all four routes successfully. Scores are measurements of this run. Automated checks do not establish full WCAG conformance; a manual screen-reader audit and real Web3Forms inbox delivery were not performed. No email was sent by the tests.
+
+### GitHub verification and live checks
+
+[GitHub Actions run 38320838046](https://github.com/Bojan-Ivanovski/heral-metal/actions/runs/38320838046) passed build, all 210 layout checks, all 210 consistency checks, all 42 accessibility checks, interaction tests and deployment for implementation commit `2691455642299478386117ef8fe04f1a2a2b1cad`. All 24 live route/resource checks passed, and the deployed homepage matched the production HTML byte for byte.
+
+CI Lighthouse performance was 84 for Home, 94 for About, 95 for Quote and 96 for English Services. Accessibility, best practices and SEO were 100 on all four pages. Home's simulated blocking time was 368ms in CI versus 0ms locally; layout shift was zero in both. The prior deployment's CI Home score was 92, so the 90+ performance target is not consistently demonstrated across these runs. This difference is retained in the record; its cause has not been established. No branding, imagery or typography asset replacement was made to change benchmark scores.
